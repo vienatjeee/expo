@@ -137,3 +137,29 @@ it('strips web-only href attributes', () => {
     })
   );
 });
+
+it('supports array styles', () => {
+  const { getByTestId } = render(
+    <Link testID="link" href="https://www.example.com/foo" style={[{ color: 'red' }]}>
+      Foo
+    </Link>
+  );
+  const node = getByTestId('link');
+  expect(node.props.style).toStrictEqual([{ color: 'red' }]);
+});
+
+it('children supports array styles', () => {
+  const { getByTestId } = render(
+    <Link
+      testID="link"
+      href="https://www.example.com/foo"
+      asChild
+      style={[{ borderColor: 'blue' }]}>
+      <Pressable style={[{ backgroundColor: 'red' }]}>
+        <Text>Foo</Text>
+      </Pressable>
+    </Link>
+  );
+  const node = getByTestId('link');
+  expect(node.props.style).toStrictEqual({ backgroundColor: 'red', borderColor: 'blue' });
+});
