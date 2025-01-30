@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "BareExpo",
-    "slug": "bare-expo",
+    "name": "sdk52",
+    "slug": "sdk52",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
@@ -45,12 +45,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "2c28de10-a2cd-11e6-b8ce-59d1587e6774"
+        "projectId": "2b85f8ed-765b-4228-8ad8-2f397e32800a"
       }
     },
     "runtimeVersion": "1.0.0",
     "updates": {
-      "url": "https://u.expo.dev/2c28de10-a2cd-11e6-b8ce-59d1587e6774"
+      "url": "https://u.expo.dev/2b85f8ed-765b-4228-8ad8-2f397e32800a"
     },
     "plugins": [
       "expo-video",
