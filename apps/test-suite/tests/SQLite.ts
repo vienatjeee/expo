@@ -2,6 +2,7 @@ import { Asset } from 'expo-asset';
 import * as FS from 'expo-file-system';
 import { Paths } from 'expo-file-system/next';
 import * as SQLite from 'expo-sqlite';
+import { SQLiteStorage } from 'expo-sqlite/kv-store';
 import path from 'path';
 import semver from 'semver';
 
@@ -13,7 +14,7 @@ interface UserEntity {
   j: number;
 }
 
-export function test({ describe, expect, it, beforeAll, beforeEach, afterEach, ...t }) {
+export function test({ describe, expect, it, beforeAll, beforeEach, afterAll, afterEach, ...t }) {
   describe('Basic tests', () => {
     it('should be able to drop + create a table, insert, query', async () => {
       const db = await SQLite.openDatabaseAsync(':memory:');
@@ -735,26 +736,6 @@ INSERT INTO users (user_id, name, k, j) VALUES (3, 'Nikhilesh Sigatapu', 7, 42.1
     });
   });
 
-  describe('CR-SQLite', () => {
-    it('should load crsqlite extension correctly', async () => {
-      const db = await SQLite.openDatabaseAsync('test.db', { enableCRSQLite: true });
-      await db.execAsync(`
-DROP TABLE IF EXISTS foo;
-CREATE TABLE foo (a INTEGER PRIMARY KEY NOT NULL, b INTEGER);
-`);
-
-      await db.getFirstAsync(`SELECT crsql_as_crr("foo")`);
-      await db.runAsync('INSERT INTO foo (a, b) VALUES (?, ?)', 1, 2);
-      await db.runAsync('INSERT INTO foo (a, b) VALUES (?, ?)', [3, 4]);
-      const result = await db.getFirstAsync<any>(`SELECT * FROM crsql_changes`);
-      expect(result.table).toEqual('foo');
-      expect(result.val).toEqual(2);
-
-      await db.closeAsync();
-      await SQLite.deleteDatabaseAsync('test.db');
-    });
-  });
-
   describe('onDatabaseChange', () => {
     it('should emit onDatabaseChange event when `enableChangeListener` is true', async () => {
       const db = await SQLite.openDatabaseAsync('test.db', { enableChangeListener: true });
@@ -913,9 +894,45 @@ INSERT INTO users (name, k, j) VALUES ('Tim Duncan', 1, 23.4);
       fileInfo = await FS.getInfoAsync(dbUri);
       expect(fileInfo.exists).toBeFalsy();
     });
-
-    addAppleAppGroupsTestSuiteAsync({ describe, expect, it, beforeEach, ...t });
   });
+
+  describe('SQLiteStorage parallel test', () => {
+    const STORAGE_NAME = 'TestStorage';
+    afterAll(async () => {
+      await FS.deleteAsync(FS.documentDirectory + STORAGE_NAME, { idempotent: true });
+    });
+
+    it('should support parallel operations for both async and sync calls', async () => {
+      const storage = new SQLiteStorage(STORAGE_NAME);
+      const promises = [
+        (async () => {
+          await delayAsync(10);
+          await storage.setItemAsync('async-key1', '1');
+        })(),
+        (async () => {
+          await delayAsync(10);
+          await storage.setItemAsync('async-key2', '2');
+        })(),
+        (async () => {
+          await delayAsync(10);
+          storage.setItemSync('sync-key1', '3');
+        })(),
+        (async () => {
+          await delayAsync(10);
+          storage.setItemSync('sync-key2', '4');
+        })(),
+        storage.setItemAsync('async-key3', '5'),
+        Promise.resolve().then(() => storage.setItemSync('sync-key3', '6')),
+      ];
+      await Promise.all(promises);
+      const keys = await storage.getAllKeysAsync();
+      expect(keys.length).toBe(6);
+      await storage.clearAsync();
+      await storage.closeAsync();
+    });
+  });
+
+  addAppleAppGroupsTestSuiteAsync({ describe, expect, it, beforeEach, ...t });
 }
 
 function addAppleAppGroupsTestSuiteAsync({ describe, expect, it, beforeEach, ...t }) {

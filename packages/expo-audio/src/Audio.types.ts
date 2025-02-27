@@ -1,6 +1,8 @@
 // @docsMissing
 export type AudioSource =
   | string
+  | number
+  | null
   | {
       /**
        * A string representing the resource identifier for the audio,
@@ -8,12 +10,16 @@ export type AudioSource =
        */
       uri?: string;
       /**
+       * The asset ID of a local audio asset, acquired with the `require` function.
+       * This property is exclusive with the `uri` property. When both are present, the `assetId` will be ignored.
+       */
+      assetId?: number;
+      /**
        * An object representing the HTTP headers to send along with the request for a remote audio source.
        * On web requires the `Access-Control-Allow-Origin` header returned by the server to include the current domain.
        */
       headers?: Record<string, string>;
-    }
-  | null;
+    };
 
 export type RecordingInput = {
   name: string;
@@ -35,6 +41,7 @@ export type AudioStatus = {
   duration: number;
   playing: boolean;
   loop: boolean;
+  didJustFinish: boolean;
   isBuffering: boolean;
   isLoaded: boolean;
   playbackRate: number;
@@ -134,6 +141,10 @@ export enum AudioQuality {
 export type BitRateStrategy = 'constant' | 'longTermAverage' | 'variableConstrained' | 'variable';
 
 export type RecordingOptions = {
+  /**
+   * A boolean that determines whether audio level information will be part of the status object under the "metering" key.
+   */
+  isMeteringEnabled?: boolean;
   /**
    * The desired file extension.
    *
@@ -270,12 +281,35 @@ export type RecordingOptionsAndroid = {
   maxFileSize?: number;
 };
 
-// @docsMissing
 export type AudioMode = {
+  /**
+   * Determines if audio playback is allowed when the device is in silent mode.
+   *
+   * @platform ios
+   */
   playsInSilentMode: boolean;
+  /**
+   * Determines how the audio session interacts with other sessions.
+   *
+   * @platform ios
+   */
   interruptionMode: InterruptionMode;
+  /**
+   * Whether the audio session allows recording.
+   *
+   * @default false
+   * @platform ios
+   */
   allowsRecording: boolean;
+  /**
+   * Whether the audio session stays active when the app moves to the background.
+   * @default false
+   */
   shouldPlayInBackground: boolean;
+  /**
+   * Whether the audio should route through the earpiece.
+   * @platform android
+   */
   shouldRouteThroughEarpiece: boolean;
 };
 

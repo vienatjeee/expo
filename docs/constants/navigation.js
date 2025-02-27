@@ -1,8 +1,8 @@
 import frontmatter from 'front-matter';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { URL, fileURLToPath } from 'node:url';
 import { u as make } from 'unist-builder';
-import { URL, fileURLToPath } from 'url';
 
 import { VERSIONS } from './versions.js';
 
@@ -19,15 +19,31 @@ const homeDirectories = [
   'debugging',
   'deploy',
   'review',
+  'monitoring',
 ];
 /** Manual list of directories to categorize as "Learn" */
-const learnDirectories = ['tutorial', 'ui-programming', 'additional-resources'];
+const learnDirectories = ['tutorial', 'additional-resources'];
 /** Manual list of directories to categorize as "Archive" */
 const archiveDirectories = ['archive'];
 /** Manual list of directories to categorize as "Reference" */
 const referenceDirectories = ['versions', 'technical-specs', 'more'];
 /** Private preview section which isn't linked in the documentation */
 const previewDirectories = ['feature-preview', 'preview'];
+/** Manual list of directories to categorize as "EAS" */
+const easDirectories = [
+  'eas',
+  'build',
+  'app-signing',
+  'build-reference',
+  'submit',
+  'eas-update',
+  'eas-insights',
+  'distribution',
+  'custom-builds',
+  'hosting',
+  'billing',
+  'accounts',
+];
 
 /** All other unlisted directories */
 const generalDirectories = fs
@@ -44,12 +60,13 @@ const generalDirectories = fs
         ...referenceDirectories,
         ...learnDirectories,
         ...previewDirectories,
+        ...easDirectories,
       ].includes(name)
   );
 
 // --- Navigation ---
 
-const home = [
+export const home = [
   makeSection('Get started', [
     makePage('get-started/introduction.mdx'),
     makePage('get-started/create-a-project.mdx'),
@@ -127,15 +144,18 @@ const home = [
     makePage('deploy/submit-to-app-stores.mdx'),
     makePage('deploy/app-stores-metadata.mdx'),
     makePage('deploy/send-over-the-air-updates.mdx'),
+    makePage('deploy/web.mdx'),
   ]),
+  makeSection('Monitor', [makePage('monitoring/services.mdx')]),
   makeSection('More', [makePage('core-concepts.mdx'), makePage('faq.mdx')]),
 ];
 
-const general = [
+export const general = [
   makeSection('', [makePage('guides/overview.mdx')]),
   makeSection('Development process', [
     makePage('workflow/overview.mdx'),
     makePage('workflow/configuration.mdx'),
+    makePage('workflow/continuous-native-generation.mdx'),
     makePage('workflow/using-libraries.mdx'),
     makePage('guides/apple-privacy.mdx'),
     makePage('guides/permissions.mdx'),
@@ -155,12 +175,7 @@ const general = [
     ),
     makeGroup(
       'Custom native code',
-      [
-        makePage('workflow/continuous-native-generation.mdx'),
-        makePage('workflow/customizing.mdx'),
-        makePage('workflow/prebuild.mdx'),
-        makePage('guides/adopting-prebuild.mdx'),
-      ],
+      [makePage('workflow/customizing.mdx'), makePage('guides/adopting-prebuild.mdx')],
       { expanded: false }
     ),
     makeGroup(
@@ -174,7 +189,7 @@ const general = [
       'Web',
       [
         makePage('workflow/web.mdx'),
-        makePage('distribution/publishing-websites.mdx'),
+        makePage('guides/publishing-websites.mdx'),
         makePage('guides/dom-components.mdx'),
         makePage('guides/progressive-web-apps.mdx'),
         makePage('guides/tailwind.mdx'),
@@ -288,18 +303,91 @@ const general = [
     ],
     { expanded: false }
   ),
-  makeSection('EAS', [
-    makePage('eas/index.mdx'),
-    makePage('eas/json.mdx'),
-    makePage('eas/environment-variables.mdx'),
-    makePage('eas/using-environment-variables.mdx'),
+  makeSection('Push notifications', [
+    makePage('push-notifications/overview.mdx'),
+    makePage('push-notifications/what-you-need-to-know.mdx'),
+    makePage('push-notifications/push-notifications-setup.mdx'),
+    makePage('push-notifications/sending-notifications.mdx'),
+    makePage('push-notifications/receiving-notifications.mdx'),
+    makeGroup(
+      'Reference',
+      [
+        makePage('push-notifications/fcm-credentials.mdx'),
+        makePage('push-notifications/sending-notifications-custom.mdx'),
+        makePage('push-notifications/faq.mdx'),
+      ],
+      { expanded: false }
+    ),
   ]),
-  makeSection('Workflows', [
-    makePage('workflows/get-started.mdx'),
-    makePage('workflows/triggers.mdx'),
-    makePage('workflows/jobs.mdx'),
-    makePage('workflows/control-flow.mdx'),
-    makePage('workflows/variables.mdx'),
+  makeSection(
+    'More',
+    [
+      makePage('workflow/upgrading-expo-sdk-walkthrough.mdx'),
+      makeSection('Assorted', [
+        makePage('guides/authentication.mdx'),
+        makePage('guides/using-hermes.mdx'),
+        makePage('guides/ios-developer-mode.mdx'),
+        makePage('guides/icons.mdx'),
+        makePage('guides/localization.mdx'),
+        makePage('guides/configuring-js-engines.mdx'),
+        makePage('guides/using-bun.mdx'),
+        makePage('guides/editing-richtext.mdx'),
+        makePage('guides/store-assets.mdx'),
+        makePage('guides/local-first.mdx'),
+        makePage('guides/keyboard-handling.mdx'),
+      ]),
+      makeSection('Integrations', [
+        makePage('guides/using-analytics.mdx'),
+        makePage('guides/facebook-authentication.mdx'),
+        makePage('guides/using-supabase.mdx'),
+        makePage('guides/using-firebase.mdx'),
+        makePage('guides/google-authentication.mdx'),
+        makePage('guides/using-eslint.mdx'),
+        makePage('guides/using-nextjs.mdx'),
+        makePage('guides/using-logrocket.mdx'),
+        makePage('guides/using-sentry.mdx'),
+        makePage('guides/using-bugsnag.mdx'),
+        makePage('guides/using-vexo.mdx'),
+        makePage('guides/building-for-tv.mdx'),
+        makePage('guides/typescript.mdx'),
+        makePage('guides/in-app-purchases.mdx'),
+      ]),
+      makeSection('Troubleshooting', [
+        makePage('troubleshooting/overview.mdx'),
+        makePage('troubleshooting/application-has-not-been-registered.mdx'),
+        makePage('troubleshooting/clear-cache-macos-linux.mdx'),
+        makePage('troubleshooting/clear-cache-windows.mdx'),
+        makePage('troubleshooting/react-native-version-mismatch.mdx'),
+        makePage('troubleshooting/proxies.mdx'),
+      ]),
+    ],
+    { expanded: true }
+  ),
+  makeSection('Regulatory compliance', [
+    makePage('regulatory-compliance/data-and-privacy-protection.mdx'),
+    makePage('regulatory-compliance/gdpr.mdx'),
+    makePage('regulatory-compliance/hipaa.mdx'),
+    makePage('regulatory-compliance/privacy-shield.mdx'),
+  ]),
+];
+
+export const eas = [
+  makeSection(
+    '',
+    [
+      makePage('eas/index.mdx'),
+      makePage('eas/environment-variables.mdx'),
+      makePage('eas/using-environment-variables.mdx'),
+    ],
+    {
+      expanded: true,
+    }
+  ),
+  makeSection('EAS Workflows', [
+    makePage('eas/workflows/get-started.mdx'),
+    makePage('eas/workflows/examples.mdx'),
+    makePage('eas/workflows/syntax.mdx'),
+    makePage('eas/workflows/upgrade.mdx'),
   ]),
   makeSection('EAS Build', [
     makePage('build/introduction.mdx'),
@@ -312,7 +400,7 @@ const general = [
     makePage('build/building-from-github.mdx'),
     makePage('build/orbit.mdx'),
     makeGroup(
-      'App Signing',
+      'App signing',
       [
         makePage('app-signing/app-credentials.mdx'),
         makePage('app-signing/managed-credentials.mdx'),
@@ -361,6 +449,20 @@ const general = [
       { expanded: false }
     ),
   ]),
+  makeSection('EAS Hosting', [
+    makePage('eas/hosting/introduction.mdx'),
+    makePage('eas/hosting/get-started.mdx'),
+    makePage('eas/hosting/deployments-and-aliases.mdx'),
+    makePage('eas/hosting/environment-variables.mdx'),
+    makePage('eas/hosting/custom-domain.mdx'),
+    makePage('eas/hosting/api-routes.mdx'),
+    makePage('eas/hosting/workflows.mdx'),
+    makeGroup('Reference', [
+      makePage('eas/hosting/reference/caching.mdx'),
+      makePage('eas/hosting/reference/responses-and-headers.mdx'),
+      makePage('eas/hosting/reference/worker-runtime.mdx'),
+    ]),
+  ]),
   makeSection('EAS Submit', [
     makePage('submit/introduction.mdx'),
     makePage('submit/eas-json.mdx'),
@@ -372,6 +474,7 @@ const general = [
     makePage('eas-update/getting-started.mdx'),
     makeGroup('Preview', [
       makePage('eas-update/develop-faster.mdx'),
+      makePage('eas-update/override.mdx'),
       makePage('eas-update/expo-dev-client.mdx'),
       makePage('eas-update/github-actions.mdx'),
     ]),
@@ -398,6 +501,8 @@ const general = [
       makePage('eas-update/standalone-service.mdx'),
       makePage('eas-update/codepush.mdx'),
       makePage('eas-update/migrate-from-classic-updates.mdx'),
+      makePage('eas-update/trace-update-id-expo-dashboard.mdx'),
+      makePage('eas-update/estimate-bandwidth.mdx'),
       makePage('eas-update/faq.mdx'),
     ]),
   ]),
@@ -415,95 +520,34 @@ const general = [
     ),
   ]),
   makeSection('EAS Insights', [makePage('eas-insights/introduction.mdx')]),
-  makeSection('Push notifications', [
-    makePage('push-notifications/overview.mdx'),
-    makePage('push-notifications/what-you-need-to-know.mdx'),
-    makePage('push-notifications/push-notifications-setup.mdx'),
-    makePage('push-notifications/sending-notifications.mdx'),
-    makePage('push-notifications/receiving-notifications.mdx'),
-    makeGroup(
-      'Reference',
-      [
-        makePage('push-notifications/fcm-credentials.mdx'),
-        makePage('push-notifications/sending-notifications-custom.mdx'),
-        makePage('push-notifications/faq.mdx'),
-      ],
-      { expanded: false }
-    ),
-  ]),
   makeSection('Distribution', [
     makePage('distribution/introduction.mdx'),
     makePage('distribution/app-stores.mdx'),
     makePage('distribution/app-transfers.mdx'),
     makePage('distribution/app-size.mdx'),
   ]),
-  makeSection(
-    'More',
-    [
-      makePage('workflow/upgrading-expo-sdk-walkthrough.mdx'),
-      makePage('eas/webhooks.mdx'),
-      makeSection('Assorted', [
-        makePage('guides/authentication.mdx'),
-        makePage('guides/sharing-preview-releases.mdx'),
-        makePage('guides/using-hermes.mdx'),
-        makePage('guides/ios-developer-mode.mdx'),
-        makePage('guides/icons.mdx'),
-        makePage('guides/localization.mdx'),
-        makePage('guides/configuring-js-engines.mdx'),
-        makePage('guides/using-bun.mdx'),
-        makePage('guides/editing-richtext.mdx'),
-        makePage('guides/store-assets.mdx'),
-        makePage('guides/local-first.mdx'),
-        makePage('guides/keyboard-handling.mdx'),
-      ]),
-      makeSection('Integrations', [
-        makePage('guides/using-analytics.mdx'),
-        makePage('guides/facebook-authentication.mdx'),
-        makePage('guides/using-supabase.mdx'),
-        makePage('guides/using-firebase.mdx'),
-        makePage('guides/google-authentication.mdx'),
-        makePage('guides/using-eslint.mdx'),
-        makePage('guides/using-nextjs.mdx'),
-        makePage('guides/using-sentry.mdx'),
-        makePage('guides/using-bugsnag.mdx'),
-        makePage('guides/building-for-tv.mdx'),
-        makePage('guides/typescript.mdx'),
-        makePage('guides/in-app-purchases.mdx'),
-      ]),
-      makeSection('Expo accounts', [
-        makePage('accounts/account-types.mdx'),
-        makePage('accounts/two-factor.mdx'),
-        makePage('accounts/programmatic-access.mdx'),
-        makePage('accounts/sso.mdx'),
-      ]),
-      makeSection('Billing', [
-        makePage('billing/overview.mdx'),
-        makePage('billing/plans.mdx'),
-        makePage('billing/manage.mdx'),
-        makePage('billing/invoices-and-receipts.mdx'),
-        makePage('billing/usage-based-pricing.mdx'),
-        makePage('billing/faq.mdx'),
-      ]),
-      makeSection('Troubleshooting', [
-        makePage('troubleshooting/overview.mdx'),
-        makePage('troubleshooting/application-has-not-been-registered.mdx'),
-        makePage('troubleshooting/clear-cache-macos-linux.mdx'),
-        makePage('troubleshooting/clear-cache-windows.mdx'),
-        makePage('troubleshooting/react-native-version-mismatch.mdx'),
-        makePage('troubleshooting/proxies.mdx'),
-      ]),
-    ],
-    { expanded: true }
-  ),
-  makeSection('Regulatory compliance', [
-    makePage('regulatory-compliance/data-and-privacy-protection.mdx'),
-    makePage('regulatory-compliance/gdpr.mdx'),
-    makePage('regulatory-compliance/hipaa.mdx'),
-    makePage('regulatory-compliance/privacy-shield.mdx'),
+  makeSection('Reference', [
+    makePage('eas/json.mdx'),
+    makePage('eas/webhooks.mdx'),
+    makeSection('Expo accounts', [
+      makePage('accounts/account-types.mdx'),
+      makePage('accounts/two-factor.mdx'),
+      makePage('accounts/programmatic-access.mdx'),
+      makePage('accounts/sso.mdx'),
+      makePage('accounts/audit-logs.mdx'),
+    ]),
+    makeSection('Billing', [
+      makePage('billing/overview.mdx'),
+      makePage('billing/plans.mdx'),
+      makePage('billing/manage.mdx'),
+      makePage('billing/invoices-and-receipts.mdx'),
+      makePage('billing/usage-based-pricing.mdx'),
+      makePage('billing/faq.mdx'),
+    ]),
   ]),
 ];
 
-const learn = [
+export const learn = [
   makeSection('', [makePage('tutorial/overview.mdx')]),
   makeSection(
     'Expo tutorial',
@@ -623,11 +667,12 @@ const versionsReference = VERSIONS.reduce(
   {}
 );
 
-const reference = { ...versionsReference, latest: versionsReference['latest'] };
+export const reference = { ...versionsReference, latest: versionsReference['latest'] };
 
 export default {
   home,
   general,
+  eas,
   learn,
   preview,
   archive,
@@ -639,12 +684,13 @@ export default {
   archiveDirectories,
   homeDirectories,
   learnDirectories,
+  easDirectories,
 };
 
 // --- MDX methods ---
 
 function makeSection(name, children = [], props = {}) {
-  return make('section', { name, ...{ expanded: false, ...props } }, children);
+  return make('section', { name, expanded: false, ...props }, children);
 }
 
 function makeGroup(name, children = [], props = {}) {

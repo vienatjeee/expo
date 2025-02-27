@@ -18,7 +18,7 @@ import {
 import Colors from '../../../constants/Colors';
 
 interface Props {
-  header?: JSX.Element;
+  header?: React.ReactElement;
   extraButtons?: (
     | {
         iconName: string;
@@ -29,7 +29,7 @@ interface Props {
       }
     | (() => React.ReactNode)
   )[];
-  extraIndicator?: JSX.Element;
+  extraIndicator?: React.ReactElement;
   style?: StyleProp<ViewStyle>;
 
   // Functions
@@ -37,6 +37,7 @@ interface Props {
   pause: () => void;
   replay: () => void;
   next?: () => void;
+  replace?: () => void;
   setRate: (rate: number, shouldCorrectPitch: boolean) => void;
   setIsMuted: (isMuted: boolean) => void;
   setPosition: (position: number) => Promise<any>;
@@ -117,6 +118,26 @@ export default function Player(props: Props) {
       );
     }
     return null;
+  };
+
+  const _renderReplaceButton = () => {
+    return (
+      <View>
+        <TouchableOpacity style={styles.button} onPress={props.replace}>
+          <Text
+            style={{
+              textAlign: 'center',
+              fontWeight: 'bold',
+              marginLeft: 8,
+              fontSize: 12,
+              height: 36,
+              color: Colors.tintColor,
+            }}>
+            Replace Source
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   const _renderAuxiliaryButton = ({
@@ -253,6 +274,7 @@ export default function Player(props: Props) {
             active: false,
           })}
       </View>
+      {_renderReplaceButton()}
       {_maybeRenderErrorOverlay()}
     </View>
   );

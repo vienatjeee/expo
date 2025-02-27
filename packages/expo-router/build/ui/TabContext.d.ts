@@ -11,17 +11,11 @@ export type ExpoTabsNavigatorScreenOptions = {
 };
 export type ExpoTabsNavigatorOptions = DefaultNavigatorOptions<ParamListBase, string | undefined, TabNavigationState<ParamListBase>, ExpoTabsScreenOptions, TabNavigationEventMap, ExpoTabsNavigationProp<ParamListBase>> & Omit<TabRouterOptions, 'initialRouteName'> & ExpoTabsNavigatorScreenOptions;
 export type ExpoTabsNavigationProp<ParamList extends ParamListBase, RouteName extends keyof ParamList = keyof ParamList, NavigatorID extends string | undefined = undefined> = NavigationProp<ParamList, RouteName, NavigatorID, TabNavigationState<ParamListBase>, ExpoTabsScreenOptions, TabNavigationEventMap>;
-/**
- * @hidden
- */
 export type ExpoTabsScreenOptions = Pick<BottomTabNavigationOptions, 'title' | 'lazy' | 'freezeOnBlur'> & {
     params?: object;
     title: string;
     action: NavigationAction;
 };
-/**
- * @hidden
- */
 export type TabNavigationEventMap = {
     /**
      * Event which fires on tapping on the tab in the tab bar.
@@ -64,7 +58,7 @@ export declare const TabsDescriptorsContext: import("react").Context<Record<stri
         source?: string | undefined;
         target?: string | undefined;
     }>)): void;
-    navigate<RouteName extends string>(...args: [screen: string] | [screen: string, params: object | undefined]): void;
+    navigate<RouteName extends string>(...args: [screen: string] | [screen: string, params: object | undefined] | [screen: string, params: object | undefined, merge: boolean]): void;
     navigate<RouteName_1 extends string>(options: {
         name: string;
         params: object | undefined;
@@ -122,7 +116,7 @@ export declare const TabsNavigatorContext: import("react").Context<({
         source?: string | undefined;
         target?: string | undefined;
     }>)): void;
-    navigate<RouteName extends string>(...args: [screen: string] | [screen: string, params: object | undefined]): void;
+    navigate<RouteName extends string>(...args: [screen: string] | [screen: string, params: object | undefined] | [screen: string, params: object | undefined, merge: boolean]): void;
     navigate<RouteName_1 extends string>(options: {
         name: string;
         params: object | undefined;

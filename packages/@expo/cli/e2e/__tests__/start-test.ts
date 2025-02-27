@@ -2,7 +2,12 @@
 import fs from 'fs';
 import path from 'path';
 
-import { projectRoot, getLoadedModulesAsync, setupTestProjectWithOptionsAsync } from './utils';
+import {
+  projectRoot,
+  getLoadedModulesAsync,
+  setupTestProjectWithOptionsAsync,
+  getRouterE2ERoot,
+} from './utils';
 import { createExpoStart, executeExpoAsync } from '../utils/expo';
 
 const originalForceColor = process.env.FORCE_COLOR;
@@ -97,7 +102,6 @@ describe('server', () => {
     await fs.promises.rm(path.join(projectRoot, '.expo'), { force: true, recursive: true });
     await expo.startAsync();
   });
-
   afterAll(async () => {
     await expo.stopAsync();
   });
@@ -157,5 +161,71 @@ describe('server', () => {
       ]),
       mappings: expect.any(String),
     });
+  });
+});
+
+describe('start - dev clients', () => {
+  const expo = createExpoStart({
+    env: {
+      EXPO_USE_FAST_RESOLVER: 'true',
+    },
+  });
+
+  beforeAll(async () => {
+    const projectRoot = await setupTestProjectWithOptionsAsync('start-dev-clients', 'with-blank');
+    expo.options.cwd = projectRoot;
+
+    // Add a `.env` file with `TEST_SCHEME`
+    await fs.promises.writeFile(path.join(projectRoot, '.env'), `TEST_SCHEME=some-value`);
+    // Add a `app.config.js` that asserts an env var from .env
+    await fs.promises.writeFile(
+      path.join(projectRoot, 'app.config.js'),
+      `const assert = require('node:assert');
+      const { env } = require('node:process');
+  
+      module.exports = ({ config }) => {
+        assert(env.TEST_SCHEME, 'TEST_SCHEME is not defined');
+        return { ...config, scheme: env.TEST_ENV };
+      };`
+    );
+
+    await expo.startAsync(['--dev-client']);
+  });
+  afterAll(async () => {
+    await expo.stopAsync();
+  });
+
+  it('runs `npx expo start` in dev client mode, using environment variable from .env', async () => {
+    const response = await expo.fetchBundleAsync('/');
+    expect(response.ok).toBeTruthy();
+  });
+});
+
+describe('start - webcontainer', () => {
+  const expo = createExpoStart({
+    cwd: getRouterE2ERoot(),
+    port: 8081, // Only port 8081 is supported with the ws-tunnel
+    env: {
+      NODE_ENV: 'development',
+      EXPO_USE_STATIC: 'server',
+      E2E_ROUTER_SRC: 'server',
+      E2E_ROUTER_ASYNC: 'development',
+      EXPO_USE_FAST_RESOLVER: 'true',
+      // Force webcontainer mode
+      CI: 'false',
+      EXPO_FORCE_WEBCONTAINER_ENV: 'true',
+    },
+  });
+
+  beforeEach(async () => {
+    await expo.startAsync();
+  });
+  afterAll(async () => {
+    await expo.stopAsync();
+  });
+
+  it('starts with ws-tunnel enabled by default', () => {
+    // Ensure dev server URL points to the ws tunnel by default
+    expect(expo.url.href).toContain('.boltexpo.dev:');
   });
 });

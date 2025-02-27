@@ -16,6 +16,7 @@ import {
   isValidElement,
   useContext,
   useMemo,
+  PropsWithChildren,
 } from 'react';
 import { StyleSheet, ViewProps, View } from 'react-native';
 
@@ -41,6 +42,7 @@ export * from './TabContext';
 export * from './TabList';
 export * from './TabSlot';
 export * from './TabTrigger';
+export { ExpoTabsResetValue } from './TabRouter';
 
 /**
  * Options to provide to the Tab Router.
@@ -96,17 +98,20 @@ export function Tabs(props: TabsProps) {
   );
 }
 
-export type UseTabsWithChildrenOptions = UseTabsOptions & {
-  children: ReactNode;
-};
+// @docsMissing
+export type UseTabsWithChildrenOptions = PropsWithChildren<UseTabsOptions>;
 
+// @docsMissing
 export type UseTabsWithTriggersOptions = UseTabsOptions & {
   triggers: ScreenTrigger[];
 };
 
 /**
  * Hook version of `Tabs`. The returned NavigationContent component
- * should be rendered.
+ * should be rendered. Using the hook requires using the `<TabList />`
+ * and `<TabTrigger />` components exported from Expo Router.
+ *
+ * The `useTabsWithTriggers()` hook can be used for custom components.
  *
  * @see [`Tabs`](#tabs) for the component version of this hook.
  * @example
@@ -243,7 +248,7 @@ function parseTriggersFromChildren(
     if (!href) {
       if (process.env.NODE_ENV === 'development') {
         console.warn(
-          `<TabTrigger name={${name}}> does not have a 'href' prop. TabTriggers within a <TabList /> are required to have a href.`
+          `<TabTrigger name={${name}}> does not have a 'href' prop. TabTriggers within a <TabList /> are required to have an href.`
         );
       }
       return;

@@ -1,5 +1,5 @@
 import { DefaultNavigatorOptions, ParamListBase, TabActionHelpers, TabNavigationState, TabRouterOptions } from '@react-navigation/native';
-import { ReactNode } from 'react';
+import { ReactNode, PropsWithChildren } from 'react';
 import { ViewProps } from 'react-native';
 import { ExpoTabsScreenOptions, TabNavigationEventMap, TabsContextValue } from './TabContext';
 import { ScreenTrigger } from './common';
@@ -7,6 +7,7 @@ export * from './TabContext';
 export * from './TabList';
 export * from './TabSlot';
 export * from './TabTrigger';
+export { ExpoTabsResetValue } from './TabRouter';
 /**
  * Options to provide to the Tab Router.
  */
@@ -33,15 +34,16 @@ export type TabsProps = ViewProps & {
  * ```
  */
 export declare function Tabs(props: TabsProps): import("react").JSX.Element;
-export type UseTabsWithChildrenOptions = UseTabsOptions & {
-    children: ReactNode;
-};
+export type UseTabsWithChildrenOptions = PropsWithChildren<UseTabsOptions>;
 export type UseTabsWithTriggersOptions = UseTabsOptions & {
     triggers: ScreenTrigger[];
 };
 /**
  * Hook version of `Tabs`. The returned NavigationContent component
- * should be rendered.
+ * should be rendered. Using the hook requires using the `<TabList />`
+ * and `<TabTrigger />` components exported from Expo Router.
+ *
+ * The `useTabsWithTriggers()` hook can be used for custom components.
  *
  * @see [`Tabs`](#tabs) for the component version of this hook.
  * @example
@@ -64,6 +66,9 @@ export declare function useTabsWithChildren(options: UseTabsWithChildrenOptions)
         }> | ((state: Readonly<Readonly<{
             key: string;
             index: number;
+            /**
+             * Options to provide to the Tab Router.
+             */
             routeNames: string[];
             history?: unknown[] | undefined;
             routes: import("@react-navigation/native").NavigationRoute<ParamListBase, string>[];
@@ -75,7 +80,7 @@ export declare function useTabsWithChildren(options: UseTabsWithChildrenOptions)
             source?: string | undefined;
             target?: string | undefined;
         }>)): void;
-        navigate<RouteName extends string>(...args: [screen: string] | [screen: string, params: object | undefined]): void;
+        navigate<RouteName extends string>(...args: [screen: string] | [screen: string, params: object | undefined] | [screen: string, params: object | undefined, merge: boolean]): void;
         navigate<RouteName_1 extends string>(options: {
             name: string;
             params: object | undefined;
@@ -152,7 +157,7 @@ export declare function useTabsWithChildren(options: UseTabsWithChildrenOptions)
             source?: string | undefined;
             target?: string | undefined;
         }>)): void;
-        navigate<RouteName_6 extends string>(...args: [screen: string] | [screen: string, params: object | undefined]): void;
+        navigate<RouteName_6 extends string>(...args: [screen: string] | [screen: string, params: object | undefined] | [screen: string, params: object | undefined, merge: boolean]): void;
         navigate<RouteName_7 extends string>(options: {
             name: string;
             params: object | undefined;
@@ -199,7 +204,7 @@ export declare function useTabsWithChildren(options: UseTabsWithChildrenOptions)
             source?: string | undefined;
             target?: string | undefined;
         }>)): void;
-        navigate<RouteName_11 extends string>(...args: [screen: string] | [screen: string, params: object | undefined]): void;
+        navigate<RouteName_11 extends string>(...args: [screen: string] | [screen: string, params: object | undefined] | [screen: string, params: object | undefined, merge: boolean]): void;
         navigate<RouteName_12 extends string>(options: {
             name: string;
             params: object | undefined;

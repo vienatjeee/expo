@@ -1,4 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'expo-module-gradle-plugin'
+
+import expo.modules.plugin.gradle.ExpoModuleExtension
+import expo.modules.plugin.Version
+
 // TODO(@lukmccall): Remove when we drop support for SDK 52
 def useLegacyAutolinking = false
 try {
@@ -12,24 +17,26 @@ if (useLegacyAutolinking) {
   apply from: "../scripts/autolinking.gradle"
 }
 
-def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
-apply from: expoModulesCorePlugin
-applyKotlinExpoModulesCorePlugin()
-useDefaultAndroidSdkVersions()
-useExpoPublishing()
-
 if (useLegacyAutolinking) {
   ensureDependeciesWereEvaluated(project)
 }
 
-group = 'host.exp.exponent'
-version = '52.0.11'
 
 buildscript {
   // Simple helper that allows the root project to override versions declared by this library.
   ext.safeExtGet = { prop, fallback ->
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
   }
+}
+
+def reactNativeVersion = project.extensions.getByType(ExpoModuleExtension).reactNativeVersion
+
+group = 'host.exp.exponent'
+version = '52.0.11'
+
+expoModule {
+  // We can't prebuild the module because it depends on the generated files.
+  canBePublished false
 }
 
 android {
@@ -50,6 +57,15 @@ android {
           srcDirs += new File(project.buildDir, generatedFilesSrcDir)
         }
       }
+    }
+  }
+
+  sourceSets.main.java {
+    if (reactNativeVersion.isAtLeast(new Version(0, 78, 0))) {
+      srcDirs += 'src/rn78/main'
+    } else if (reactNativeVersion.isAtLeast(new Version(0, 74, 0))) {
+      // TODO(kudo,20241217): Remove this when we drop react-native 0.77 support
+      srcDirs += 'src/rn74/main'
     }
   }
 }

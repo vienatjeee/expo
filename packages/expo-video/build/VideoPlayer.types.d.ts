@@ -42,6 +42,8 @@ export declare class VideoPlayer extends SharedObject<VideoPlayerEvents> {
      * at which playback will begin once the `play()` method is called.
      *
      * Setting `currentTime` to a new value seeks the player to the given time.
+     * Note that frame accurate seeking may incur additional decoding delay which can impact seeking performance.
+     * Consider using the [`seekBy`](#seekbyseconds) function if the time does not have to be set precisely.
      */
     currentTime: number;
     /**
@@ -148,6 +150,21 @@ export declare class VideoPlayer extends SharedObject<VideoPlayerEvents> {
      */
     readonly availableSubtitleTracks: SubtitleTrack[];
     /**
+     * Specifies the video track currently played by the player. `null` when no video is displayed.
+     *
+     * @default null
+     * @platform android
+     * @platform ios
+     */
+    readonly videoTrack: VideoTrack | null;
+    /**
+     * An array of video tracks available for the current video.
+     *
+     * @platform android
+     * @platform ios
+     */
+    readonly availableVideoTracks: VideoTrack[];
+    /**
      * Initializes a new video player instance with the given source.
      * @hidden
      */
@@ -165,7 +182,9 @@ export declare class VideoPlayer extends SharedObject<VideoPlayerEvents> {
      */
     replace(source: VideoSource): void;
     /**
-     * Seeks the playback by the given number of seconds.
+     * Seeks the playback by the given number of seconds. The time to which the player seeks may differ from the specified requested time for efficiency,
+     * depending on the encoding and what is currently buffered by the player. Use this function to implement playback controls that seek by specific amount of time,
+     * in which case, the actual time usually does not have to be precise. For frame accurate seeking, use the [`currentTime`](#currenttime) property.
      */
     seekBy(seconds: number): void;
     /**
@@ -186,11 +205,13 @@ export declare class VideoPlayer extends SharedObject<VideoPlayerEvents> {
 export type VideoThumbnailOptions = {
     /**
      * If provided, the generated thumbnail will not exceed this width in pixels, preserving its aspect ratio.
+     * @platform android
      * @platform ios
      */
     maxWidth?: number;
     /**
      * If provided, the generated thumbnail will not exceed this height in pixels, preserving its aspect ratio.
+     * @platform android
      * @platform ios
      */
     maxHeight?: number;
@@ -233,6 +254,14 @@ export type VideoSource = string | number | null | {
      * @platform ios
      */
     headers?: Record<string, string>;
+    /**
+     * Specifies whether the player should use caching for the video.
+     * > Due to platform limitations, the cache cannot be used with HLS video sources on iOS. Caching DRM-protected videos is not supported on Android and iOS.
+     * @default false
+     * @platform android
+     * @platform ios
+     */
+    useCaching?: boolean;
 };
 /**
  * Contains information about any errors that the player encountered during the playback
@@ -386,5 +415,51 @@ export type SubtitleTrack = {
      * Label of the subtitle track in the language of the device.
      */
     label: string;
+};
+/**
+ * Specifies a VideoTrack loaded from a [`VideoSource`](#videosource).
+ */
+export type VideoTrack = {
+    /**
+     * The id of the video track.
+     *
+     * > This field is platform-specific and may return different depending on the operating system.
+     */
+    id: string;
+    /**
+     * Size of the video track.
+     */
+    size: VideoSize;
+    /**
+     * MimeType of the video track or null if unknown.
+     */
+    mimeType: string | null;
+    /**
+     * Indicates whether the video track format is supported by the device.
+     *
+     * @platform android
+     */
+    isSupported: boolean;
+    /**
+     * Specifies the bitrate in bits per second. This is the peak bitrate if known, or else the average bitrate if known, or else null.
+     */
+    bitrate: number | null;
+    /**
+     * Specifies the frame rate of the video track in frames per second.
+     */
+    frameRate: number | null;
+};
+/**
+ * Specifies the size of a video track.
+ */
+export type VideoSize = {
+    /**
+     * Width of the video track in pixels.
+     */
+    width: number;
+    /**
+     * Height of the video track in pixels.
+     */
+    height: number;
 };
 //# sourceMappingURL=VideoPlayer.types.d.ts.map
